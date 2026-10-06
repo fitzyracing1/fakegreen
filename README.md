@@ -1,10 +1,34 @@
 # fakegreen
 
+[![npm](https://img.shields.io/npm/v/fakegreen.svg)](https://www.npmjs.com/package/fakegreen)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Node.js](https://img.shields.io/node/v/fakegreen.svg)](https://nodejs.org)
+
 **One command scans your agent's diff and flags every way it faked a green build.**
+
+### Who it's for
+
+- Teams shipping with Claude Code, Codex, Cursor, Gemini CLI, or Aider who want a hard stop on fake-green diffs
+- Maintainers who want a deterministic CI / pre-commit / end-of-turn tripwire — no LLM, no API key, zero runtime deps
+- Anyone tired of agents that `.skip` tests, weaken assertions, or append `|| true` and then claim *"All tests pass ✅"*
+
+⭐ **If fakegreen catches a fake-green commit for you, [star the repo](https://github.com/fitzyracing1/fakegreen)** — it helps other teams find the tripwire.
+
+### Try it in 30 seconds
 
 ```sh
 npx fakegreen
 ```
+
+No install. Needs Node.js 18+ and `git` on your `PATH`. Pin with `npm i -D fakegreen` when you're ready.
+
+| | LLM code review | fakegreen |
+|---|---|---|
+| **Speed & cost** | Seconds–minutes, API spend | Usually **under 100 ms**, free, offline |
+| **Determinism** | Can vary; easy to talk around | Same answer every time |
+| **Setup** | API key + prompts | Zero runtime deps — `npx fakegreen` |
+
+---
 
 Coding agents (Claude Code, Codex, Cursor, Gemini CLI, Aider) are rewarded for "tests pass". Sometimes they get there by
 deleting the test, slapping `.skip` on it, swapping `toBe(42)` for `toBeDefined()`, adding `@ts-ignore`, teaching the code
