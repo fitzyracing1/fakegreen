@@ -1,44 +1,74 @@
-# fakegreen
+<div align="center">
 
-[![npm](https://img.shields.io/npm/v/fakegreen.svg)](https://www.npmjs.com/package/fakegreen)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Node.js](https://img.shields.io/node/v/fakegreen.svg)](https://nodejs.org)
+# 🌱 fakegreen
 
-**One command scans your agent's diff and flags every way it faked a green build.**
+[![npm](https://img.shields.io/npm/v/fakegreen.svg?style=for-the-badge&logo=npm&logoColor=white)](https://www.npmjs.com/package/fakegreen)
+[![License: MIT](https://img.shields.io/badge/License-MIT-2ea44f.svg?style=for-the-badge)](LICENSE)
+[![Node.js](https://img.shields.io/node/v/fakegreen.svg?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
+[![GitHub stars](https://img.shields.io/github/stars/fitzyracing1/fakegreen?style=for-the-badge&logo=github)](https://github.com/fitzyracing1/fakegreen)
 
-### Who it's for
+**Catch fake-green commits before they reach your main branch.**
 
-- Teams shipping with Claude Code, Codex, Cursor, Gemini CLI, or Aider who want a hard stop on fake-green diffs
-- Maintainers who want a deterministic CI / pre-commit / end-of-turn tripwire — no LLM, no API key, zero runtime deps
-- Anyone tired of agents that `.skip` tests, weaken assertions, or append `|| true` and then claim *"All tests pass ✅"*
+*A fast, deterministic tripwire for AI-generated code changes — no LLM, no API key, no runtime dependencies.*
 
-⭐ **If fakegreen catches a fake-green commit for you, [star the repo](https://github.com/fitzyracing1/fakegreen)** — it helps other teams find the tripwire.
+[Quick start](#-quick-start) · [See the demo](#-see-it-in-action) · [Usage](#-usage) · [Detection rules](#-what-it-checks) · [Agent hooks](#-stop-the-agent-in-its-tracks-end-of-turn-hooks)
 
-### Try it in 30 seconds
+</div>
+
+> [!IMPORTANT]
+> `fakegreen` reviews **changes in your Git diff** for patterns that weaken tests or hide failing checks. It is a fast review signal, not a replacement for running your test suite or reviewing the code.
+
+## ✨ Why fakegreen?
+
+Coding agents such as Claude Code, Codex, Cursor, Gemini CLI, and Aider are often asked to make tests pass. Sometimes a change can make the build look green by skipping tests, weakening assertions, suppressing errors, or ignoring CI failures.
+
+`fakegreen` scans the diff for those patterns and reports findings with severity, file and line, rule ID, and the changed lines that triggered the rule. It is deterministic, works offline, and usually finishes in **under 100 ms**.
+
+| ⚡ Fast | 🎯 Deterministic | 🔌 Lightweight | 🛡️ CI-friendly |
+|:---:|:---:|:---:|:---:|
+| Usually under 100 ms | Same input, same result | No runtime dependencies | CLI, hooks, SARIF & GitHub annotations |
+
+## 🚀 Quick start
 
 ```sh
 npx fakegreen
 ```
 
-No install. Needs Node.js 18+ and `git` on your `PATH`. Pin with `npm i -D fakegreen` when you're ready.
+No installation required for a one-time run. You need **Node.js 18+** and **Git** on your `PATH`. To pin it to a project, install it as a development dependency:
 
-| | LLM code review | fakegreen |
-|---|---|---|
-| **Speed & cost** | Seconds–minutes, API spend | Usually **under 100 ms**, free, offline |
-| **Determinism** | Can vary; easy to talk around | Same answer every time |
-| **Setup** | API key + prompts | Zero runtime deps — `npx fakegreen` |
+```sh
+npm i -D fakegreen
+```
+
+### Who is it for?
+
+- Teams using AI coding agents that want an extra check before accepting generated changes.
+- Maintainers who want a deterministic tripwire for CI, pre-commit, or end-of-turn hooks.
+- Developers who want to catch skipped tests, weakened assertions, suppressed checks, and ignored CI failures.
+
+## 🧭 Contents
+
+- [See it in action](#-see-it-in-action)
+- [Install](#install)
+- [Usage](#-usage)
+- [What it checks](#-what-it-checks)
+- [End-of-turn agent hooks](#-stop-the-agent-in-its-tracks-end-of-turn-hooks)
+- [Pre-commit, CI and agent skill](#-pre-commit-ci-and-the-agent-skill)
+- [Configuration](#-configuration)
+- [FAQ](#-faq)
+- [Known limitations](#-known-limitations)
+- [Support & services](#-support--services)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Documentation](#-documentation)
 
 ---
 
-Coding agents (Claude Code, Codex, Cursor, Gemini CLI, Aider) are rewarded for "tests pass". Sometimes they get there by
-deleting the test, slapping `.skip` on it, swapping `toBe(42)` for `toBeDefined()`, adding `@ts-ignore`, teaching the code
-to detect `NODE_ENV === 'test'`, or appending `|| true` to the CI step. Then they say *"All tests pass ✅"*.
+## 🎬 See it in action
 
-`fakegreen` reads the git diff and catches those moves. It is **deterministic**, needs **no LLM and no API key**, has
-**zero runtime dependencies**, and usually finishes in **under 100 ms**. Hook it into your agent's end-of-turn event so the
-agent gets blocked and told what it did *before* it can claim it's done.
+The demo below shows `fakegreen` catching a commit that makes a test suite look green by weakening or removing checks.
 
-<p align="center"><img src="docs/demo.gif" alt="fakegreen catching a fake-green agent commit" width="760"></p>
+<p align="center"><img src="docs/demo.gif" alt="Animated terminal demo of fakegreen detecting fake-green changes" width="820"></p>
 
 ## Demo
 
@@ -91,7 +121,7 @@ npm i -D fakegreen            # or pin it in a project
 
 You need Node.js 18 or newer and `git` on your `PATH`.
 
-## Usage
+## 🧪 Usage
 
 ```sh
 fakegreen                     # uncommitted + staged changes vs HEAD, plus untracked files (default)
@@ -125,7 +155,7 @@ Each finding includes a severity, `file:line`, a rule id, a short explanation, a
 }
 ```
 
-## What it checks
+## 🔍 What it checks
 
 It looks **only at added and removed lines** in the diff, so old code isn't re-flagged. Comments and string literals
 are lexed out before matching, which keeps `".skip"` inside a string or a comment from triggering anything. Lines that
@@ -167,7 +197,7 @@ Severity is graded where it matters. For example, a blanket `# type: ignore` is 
 **Skipped automatically:** Markdown/docs, lockfiles, vendored and `node_modules` code, generated files, and
 `fixtures/` / `testdata/` directories.
 
-## Stop the agent in its tracks: end-of-turn hooks
+## 🛑 Stop the agent in its tracks: end-of-turn hooks
 
 Claude Code, Codex and Gemini CLI can run a command when the agent finishes its turn and **block** the stop, sending
 the command's feedback back to the model. `fakegreen hook` speaks each agent's protocol. If it finds something at or
@@ -274,7 +304,7 @@ default, so either enable them with `--git-commit-verify` or run `npx fakegreen 
 - **Before the npm release, or with a local checkout:** point hooks at the build directly with
   `--command "node /path/to/fakegreen/dist/cli.js"`.
 
-## Pre-commit, CI and the agent skill
+## 🔗 Pre-commit, CI and the agent skill
 
 ```sh
 npx fakegreen install pre-commit     # git pre-commit hook (respects core.hooksPath and .husky/pre-commit)
@@ -306,7 +336,7 @@ tests to get green, never to special-case the test environment, and to run `npx 
 done. It works as a Claude Code skill. Paste it into `AGENTS.md`, `GEMINI.md`, `.cursor/rules` or `CONVENTIONS.md` for
 other agents.
 
-## Configuration
+## ⚙️ Configuration
 
 Add an optional `.fakegreenrc.json`, a `.fakegreenrc`, or a `"fakegreen"` key in `package.json`:
 
@@ -353,33 +383,79 @@ For removed lines (like a deleted assertion), put the comment anywhere among the
 add waivers themselves. If you don't trust your agent with them at all, set
 `"rules": { "ignore-comment-added": "high" }` so any new waiver blocks the turn and gets surfaced to you.
 
-## FAQ
+## 💬 FAQ
 
-**Why not just ask an LLM to review the diff?**
-LLM reviewers are slow, cost money, need keys, and are easy to talk around. fakegreen runs in milliseconds, gives the
-same answer every time, and works offline and in CI. Use both if you like. fakegreen is the cheap tripwire that runs on
-every turn.
+<details>
+<summary><strong>Why not just ask an LLM to review the diff?</strong></summary>
 
-**Will it flag my legitimate refactors?**
-Sometimes, and that's the point of a review signal. Moves and renames are recognised, and so are tests that move
-between files and migrations from one CI command to another. In a dogfood run over the last 100 commits of 12 popular
-human-maintained repos (express, zod, vite, requests, flask, httpx, gin, cobra, ripgrep, clap, gson, spring-petclinic;
-1,200 commits), **34 high-severity findings** came up, about one every 35 commits. Almost all were real test removals
-(reverts, feature removals) that a reviewer would want to see anyway. Medium and low findings are context. The
-default `--fail-on high` only blocks on the high ones.
+LLM reviewers can take longer, cost money, require API keys, and produce inconsistent results. `fakegreen` runs in milliseconds, works offline, and gives deterministic results. You can use both: treat `fakegreen` as a lightweight tripwire on every change and use an LLM for broader code review.
 
-**Does it understand my code (AST)?**
-No. It uses a small lexer (strings and comments) plus targeted patterns on changed lines. That's what keeps it fast,
-dependency-free, and multi-language. See the limitations below.
+</details>
 
-**Can the agent just disable fakegreen?**
-It could edit the hook config, but that edit shows up in your diff. Combine the hook with the pre-commit hook or the
-GitHub Action, and treat changes to `.claude/`, `.codex/`, `.gemini/` or `.fakegreenrc.json` like changes to CI.
+<details>
+<summary><strong>Will it flag legitimate refactors?</strong></summary>
 
-**Does it send my code anywhere?**
-No. It never makes a network call. It shells out to `git` and nothing else.
+It can report changes that need context. Moves and renames are recognised, as are tests that move between files and migrations from one CI command to another. The default `--fail-on high` setting only fails on high-severity findings, so medium and low findings can be reviewed in context.
 
-## Known limitations
+</details>
+
+<details>
+<summary><strong>Does it understand my code with an AST?</strong></summary>
+
+No. `fakegreen` uses a small lexer to ignore comments and strings, along with targeted patterns on changed lines. This keeps it fast, dependency-free, and usable across several languages. See [Known limitations](#-known-limitations) for details.
+
+</details>
+
+<details>
+<summary><strong>Can an agent simply disable fakegreen?</strong></summary>
+
+An agent could edit the hook configuration, but that change would appear in the diff. For stronger protection, combine end-of-turn hooks with the pre-commit hook or GitHub Action, and review changes to `.claude/`, `.codex/`, `.gemini/`, and `.fakegreenrc.json` as carefully as changes to CI configuration.
+
+</details>
+
+<details>
+<summary><strong>Does fakegreen send my code anywhere?</strong></summary>
+
+No. `fakegreen` does not make network calls. It shells out to `git` and performs its checks locally.
+
+</details>
+
+<details>
+<summary><strong>What do the exit codes mean?</strong></summary>
+
+- `0` — no findings at or above the configured `--fail-on` threshold.
+- `1` — findings at or above the configured threshold.
+- `2` — usage or Git error.
+
+</details>
+
+<details>
+<summary><strong>Which languages and files does it check?</strong></summary>
+
+Source analysis supports JavaScript/TypeScript, Python, Go, Rust, and Java/Kotlin test annotations. It also checks relevant CI and configuration files, including GitHub Actions, GitLab CI, package and test-runner configuration, build files, and shell hooks. See [What it checks](#-what-it-checks) for the full rule list and [Known limitations](#-known-limitations) for unsupported source languages.
+
+</details>
+
+<details>
+<summary><strong>How do I run it before accepting an agent's changes?</strong></summary>
+
+Run this from your repository:
+
+```sh
+npx fakegreen
+```
+
+For a pull-request branch, you can compare against the base branch:
+
+```sh
+npx fakegreen --base origin/main
+```
+
+See [Usage](#-usage) and [End-of-turn agent hooks](#-stop-the-agent-in-its-tracks-end-of-turn-hooks) for more options and automation.
+
+</details>
+
+## ⚠️ Known limitations
 
 - Heuristic, line-based analysis with no AST. Unusual formatting (a test declaration split across lines, regex
   literals that contain quotes, macros) can cause misses or occasional false positives.
@@ -391,7 +467,7 @@ No. It never makes a network call. It shells out to `git` and nothing else.
   during the session.
 - `fakegreen-ignore-file` is only honoured when it appears in the diff's added lines or context.
 
-## Support & services
+## 💚 Support & services
 
 fakegreen is MIT-licensed and the CLI, hooks, pre-commit hook and GitHub Action will stay free. I'm Joshua Almeida, and I
 build and maintain it on my own. If it saves you from merging a "fixed" test suite that was really a deleted one, here
@@ -411,15 +487,15 @@ help you write fakegreen rules for your own codebase, test conventions and CI se
 pre-commit, CI gates) that agents can't quietly route around. Email
 [fitzyracing1@gmail.com](mailto:fitzyracing1@gmail.com?subject=fakegreen%20consulting).
 
-## Contributing
+## 🤝 Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). New detectors need a true-positive fixture **and** a false-positive guard.
 
-## License
+## 📄 License
 
 [MIT](LICENSE) © 2026 Joshua Almeida
 
-## Documentation
+## 📚 Documentation
 
 - In-repo docs: [docs/](docs/index.md)
 - Wiki: [https://github.com/fitzyracing1/fakegreen/wiki](https://github.com/fitzyracing1/fakegreen/wiki)
