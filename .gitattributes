@@ -1,2 +1,5 @@
+# Diff fixtures are byte-exact test inputs; never convert line endings.
 test/fixtures/** -text
 *.diff -text
+# Files fakegreen copies into user repos (skill) ship with LF regardless of checkout OS.
+skills/** text eol=lf
