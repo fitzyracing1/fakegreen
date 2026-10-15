@@ -34,6 +34,16 @@ test('ignores "\\ No newline at end of file" markers', () => {
   assert.equal(n.hunks[0].lines.length, 2);
 });
 
+test('parses CRLF-terminated diff output (Git for Windows)', () => {
+  const lf = fixture('mixed.diff').replace(/\r\n/g, '\n');
+  const crlf = lf.replace(/\n/g, '\r\n');
+  const a = parseDiff(lf);
+  const b = parseDiff(crlf);
+  assert.ok(a.length > 0);
+  assert.deepEqual(b, a);
+  assert.ok(!JSON.stringify(b).includes('\\r'));
+});
+
 test('handles quoted paths with spaces and unicode', () => {
   const d = [
     'diff --git "a/dir/my file.ts" "b/dir/my file.ts"',
