@@ -1,0 +1,10 @@
+description = "Scan the current changes with fakegreen and summarize any faked or weakened tests."
+prompt = """
+Run fakegreen on this repository and summarize what it flags.
+
+1. Run: !{npx --yes fakegreen --json --fail-on none {{args}}}
+   (Arguments, if any, were passed straight to fakegreen, e.g. `--base origin/main`, `--staged`, `--last-commit`.)
+2. From the JSON above, report the `source`, then a table of findings: severity, rule, file:line, and the message.
+3. Group by severity (high first). For each high finding, explain in one line why it may fake a green build and what the honest fix is.
+4. If there are no findings, say so in one line. Do not edit any files unless I ask.
+"""

@@ -308,6 +308,25 @@ tests to get green, never to special-case the test environment, and to run `npx 
 done. It works as a Claude Code skill. Paste it into `AGENTS.md`, `GEMINI.md`, `.cursor/rules` or `CONVENTIONS.md` for
 other agents.
 
+## Gemini CLI extension
+
+fakegreen is also a [Gemini CLI extension](https://geminicli.com/docs/extensions/):
+
+```sh
+gemini extensions install https://github.com/fitzyracing1/fakegreen
+```
+
+It adds:
+
+- **Slash commands**: `/fakegreen:scan [args]` (scan current changes; args pass through, e.g. `--base origin/main`),
+  `/fakegreen:branch` (everything since `origin/main`) and `/fakegreen:rules`. Each runs `npx --yes fakegreen` and
+  has Gemini summarize the flagged tests.
+- **MCP server** ([`mcp/server.js`](mcp/server.js), zero dependencies) with the tools `fakegreen_scan` and `fakegreen_rules`.
+- **Context** ([`GEMINI.md`](GEMINI.md)) and the bundled [`skills/fakegreen`](skills/fakegreen/SKILL.md) skill, telling
+  Gemini to check its own diff before claiming the build is green.
+
+For a hard end-of-turn check, also run `npx fakegreen install gemini` (see hooks above).
+
 ## Configuration
 
 Add an optional `.fakegreenrc.json`, a `.fakegreenrc`, or a `"fakegreen"` key in `package.json`:

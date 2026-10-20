@@ -1,0 +1,7 @@
+description = "Scan everything on this branch since origin/main with fakegreen and summarize flagged tests."
+prompt = """
+Run: !{npx --yes fakegreen --json --fail-on none --base origin/main}
+
+Summarize the findings from the JSON above: source, counts by severity, and a table of severity, rule, file:line, message (high first).
+For each high finding, give the honest fix in one line. If there are none, say so. Do not edit files unless I ask.
+"""

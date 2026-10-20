@@ -1,0 +1,6 @@
+description = "List every fakegreen rule."
+prompt = """
+!{npx --yes fakegreen rules}
+
+Present the fakegreen rules above as a compact list grouped by category.
+"""

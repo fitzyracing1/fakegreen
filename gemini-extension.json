@@ -1,0 +1,13 @@
+{
+  "name": "fakegreen",
+  "version": "0.1.0",
+  "description": "Catch AI agents faking a green build: skipped or deleted tests, weakened assertions, CI forced green. Deterministic, zero-LLM, no API key.",
+  "contextFileName": "GEMINI.md",
+  "mcpServers": {
+    "fakegreen": {
+      "command": "node",
+      "args": ["${extensionPath}${/}mcp${/}server.js", "--workspace", "${workspacePath}"],
+      "cwd": "${extensionPath}"
+    }
+  }
+}
