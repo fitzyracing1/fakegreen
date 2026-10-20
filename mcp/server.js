@@ -97,7 +97,7 @@ function callTool(name, a, workspace) {
     return { content: [{ type: 'text', text: summary + r.stdout }] };
   }
   if (name === 'fakegreen_rules') {
-    const r = runCli(['rules'], cwd);
+    const r = runCli(['rules', '--no-color'], cwd);
     return { isError: r.status !== 0, content: [{ type: 'text', text: (r.stdout || r.stderr).trim() }] };
   }
   throw Object.assign(new Error(`Unknown tool: ${name}`), { code: -32602 });
