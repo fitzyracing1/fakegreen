@@ -144,7 +144,7 @@ husky/shell hooks.
 | `test-skipped` | high | A skip was added: .skip, xit/xdescribe, @pytest.mark.skip/xfail, pytest.skip(), t.Skip(), #[ignore], @Disabled, @Ignore. |
 | `test-focused` | high | .only / fit / fdescribe silently disables every other test in the file or run. |
 | `test-conditional-skip` | low | A conditional skip (skipif, skipIf, importorskip, assumptions, `if testing.Short()`) was added. |
-| `assertion-removed` | medium | Net assertion count in a test file dropped (expect/assert/t.Error/assert_eq!/assertEquals...). |
+| `assertion-removed` | medium | Per-file assertion count dropped in a test or test-support file (expect/assert/t.Error/assert_eq!/assertEquals...). Checked per file so a drop cannot hide behind adds elsewhere. |
 | `assertion-weakened` | high | A specific assertion (toBe/toEqual/assert x == y/assertEquals) was replaced by a vague one (toBeTruthy/toBeDefined/assert x/assertNotNull). |
 | `assertion-trivial` | high | An assertion that can never fail was added (expect(true).toBe(true), assert True, assert!(true)). |
 | `assertion-expected-changed` | low | Only the literal expected value of an assertion changed. Confirm the code was wrong, not the test. |

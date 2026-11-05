@@ -6,7 +6,7 @@ export const RULES: RuleMeta[] = [
   { id: 'test-skipped', severity: 'high', title: 'Test skipped', description: 'A skip was added: .skip, xit/xdescribe, @pytest.mark.skip/xfail, pytest.skip(), t.Skip(), #[ignore], @Disabled, @Ignore.' },
   { id: 'test-focused', severity: 'high', title: 'Test focused', description: '.only / fit / fdescribe silently disables every other test in the file or run.' },
   { id: 'test-conditional-skip', severity: 'low', title: 'Conditional skip added', description: 'A conditional skip (skipif, skipIf, importorskip, assumptions, `if testing.Short()`) was added.' },
-  { id: 'assertion-removed', severity: 'medium', title: 'Assertions removed', description: 'Net assertion count in a test file dropped (expect/assert/t.Error/assert_eq!/assertEquals...).' },
+  { id: 'assertion-removed', severity: 'medium', title: 'Assertions removed', description: 'Per-file assertion count dropped in a test or test-support file (expect/assert/t.Error/assert_eq!/assertEquals...). Checked per file so a drop cannot hide behind adds elsewhere.' },
   { id: 'assertion-weakened', severity: 'high', title: 'Assertion weakened', description: 'A specific assertion (toBe/toEqual/assert x == y/assertEquals) was replaced by a vague one (toBeTruthy/toBeDefined/assert x/assertNotNull).' },
   { id: 'assertion-trivial', severity: 'high', title: 'Trivially-true assertion', description: 'An assertion that can never fail was added (expect(true).toBe(true), assert True, assert!(true)).' },
   { id: 'assertion-expected-changed', severity: 'low', title: 'Expected value changed', description: 'Only the literal expected value of an assertion changed. Confirm the code was wrong, not the test.' },
