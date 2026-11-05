@@ -151,8 +151,13 @@ function gitHooksDir(root: string): string {
 }
 
 export function renderPlan(plan: InstallPlan, cwd: string): string {
-  const rel = path.relative(cwd, plan.file) || plan.file;
-  const label = rel.startsWith('..') ? plan.file : rel;
+  // Compare real paths: on Windows cwd and the git root can differ in 8.3 short names or
+  // drive-letter case while naming the same directory.
+  const real = (p: string) => { try { return fs.realpathSync.native(p); } catch { return path.resolve(p); } };
+  const fileDir = real(path.dirname(plan.file));
+  const rel = path.relative(real(cwd), path.join(fileDir, path.basename(plan.file)));
+  // Repo-relative labels are shown POSIX-style, like git does, on every OS.
+  const label = !rel || rel.startsWith('..') || path.isAbsolute(rel) ? plan.file : rel.split(path.sep).join('/');
   if (plan.alreadyInstalled) return `fakegreen is already installed in ${label}; nothing to do.`;
   return lineDiff(plan.before, plan.after, label);
 }

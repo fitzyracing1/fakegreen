@@ -27,7 +27,7 @@ describe('install', () => {
     const dir = tmpRepo();
     const home = fs.mkdtempSync(path.join(require('os').tmpdir(), 'fg-home-'));
     assert.equal(planInstall('claude', { cwd: dir, global: true, home }).file, path.join(home, '.claude/settings.json'));
-    assert.ok(planInstall('claude', { cwd: dir, local: true }).file.endsWith('.claude/settings.local.json'));
+    assert.ok(planInstall('claude', { cwd: dir, local: true }).file.endsWith(path.normalize('.claude/settings.local.json')));
     const p = planInstall('claude', { cwd: dir, command: 'node /opt/fg/cli.js', hookArgs: '--base origin/main' });
     assert.match(p.after, /node \/opt\/fg\/cli\.js hook --agent claude --base origin\/main/);
   });
@@ -35,7 +35,7 @@ describe('install', () => {
   test('codex: .codex/hooks.json Stop hook', () => {
     const dir = tmpRepo();
     const p = planInstall('codex', { cwd: dir });
-    assert.ok(p.file.endsWith('.codex/hooks.json'));
+    assert.ok(p.file.endsWith(path.normalize('.codex/hooks.json')));
     const j = JSON.parse(p.after);
     assert.equal(j.hooks.Stop[0].hooks[0].command, 'npx --yes fakegreen hook --agent codex');
     assert.equal(j.hooks.Stop[0].hooks[0].timeout, 120);
@@ -66,14 +66,15 @@ describe('install', () => {
     applyPlan(p);
     const text = fs.readFileSync(hook, 'utf8');
     assert.match(text, /^#!\/bin\/sh\n# >>> fakegreen >>>\nnpx --yes fakegreen --staged \|\| exit \$\?\n# <<< fakegreen <<<\necho existing\n$/);
-    assert.ok(fs.statSync(hook).mode & 0o100);
+    // Windows has no POSIX exec bit (statSync reports none); Git for Windows runs hooks regardless.
+    if (process.platform !== 'win32') assert.ok(fs.statSync(hook).mode & 0o100);
     assert.equal(planInstall('pre-commit', { cwd: dir }).alreadyInstalled, true);
   });
 
   test('github-action and skill', () => {
     const dir = tmpRepo();
     const g = planInstall('github-action', { cwd: dir });
-    assert.ok(g.file.endsWith('.github/workflows/fakegreen.yml'));
+    assert.ok(g.file.endsWith(path.normalize('.github/workflows/fakegreen.yml')));
     assert.match(g.after, /fetch-depth: 0/);
     assert.match(g.after, /--base "origin\/\$\{\{ github\.base_ref \}\}"/);
     const s = planInstall('skill', { cwd: dir });

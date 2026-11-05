@@ -6,7 +6,10 @@ import { DiffLine, FileDiff, Hunk } from './types';
  */
 export function parseDiff(input: string): FileDiff[] {
   const files: FileDiff[] = [];
-  const lines = input.split('\n');
+  // Accept CRLF-terminated output (Git for Windows, CRLF-checked-out .diff files): a trailing
+  // \r would otherwise break header matching (`.` does not match \r) and leak into paths.
+  // Content lines already drop a trailing \r below, so this is consistent with them.
+  const lines = input.split(/\r?\n/);
   let file: FileDiff | null = null;
   let hunk: Hunk | null = null;
   let oldNo = 0;
