@@ -1,6 +1,6 @@
 {
   "name": "fakegreen",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "fakegreen catches AI coding agents (Claude Code, Codex, Gemini CLI) faking a green build: skipped or deleted tests, weakened assertions, CI forced green. Deterministic, zero-LLM, no API key.",
   "keywords": [
     "ai",
