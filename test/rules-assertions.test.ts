@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { ids, lines, only, scanEdit } from './helpers';
+import { ids, lines, only, scanChange, scanEdit } from './helpers';
 
 const T = lines(
   "describe('user', () => {",
@@ -94,6 +94,99 @@ describe('assertion-removed', () => {
   test('assertions in non-test files are ignored', () => {
     const src = 'export function f(x) {\n  assert(x > 0);\n  return x;\n}\n';
     assert.deepEqual(ids(scanEdit('src/f.ts', src, src.replace('  assert(x > 0);\n', ''))), []);
+  });
+
+  test('adding assertions in another file does not hide a per-file drop', () => {
+    const other = lines(
+      "it('other', () => {",
+      "  expect(ok()).toBe(true);",
+      '});',
+    );
+    const f = scanChange(
+      { 'src/user.test.ts': T, 'src/other.test.ts': other },
+      {
+        'src/user.test.ts': T.replace("    expect(u.name).toBe('Ada');\n", ''),
+        'src/other.test.ts': other.replace("  expect(ok()).toBe(true);", "  expect(ok()).toBe(true);\n  expect(ok()).toBeDefined();"),
+      },
+    );
+    const r = only(f, 'assertion-removed');
+    assert.equal(r.length, 1);
+    assert.equal(r[0].file, 'src/user.test.ts');
+    assert.match(r[0].message, /dropped by 1/);
+  });
+
+  test('drop explained by removed tests is not flagged', () => {
+    const before = lines(
+      "describe('user', () => {",
+      "  it('loads', async () => {",
+      "    expect(u.name).toBe('Ada');",
+      '  });',
+      "  it('saves', async () => {",
+      '    expect(u.ok).toBe(true);',
+      '  });',
+      '});',
+    );
+    const after = lines(
+      "describe('user', () => {",
+      "  it('loads', async () => {",
+      "    expect(u.name).toBe('Ada');",
+      '  });',
+      '});',
+    );
+    const f = scanEdit('src/user.test.ts', before, after);
+    assert.deepEqual(only(f, 'assertion-removed'), []);
+    assert.equal(only(f, 'test-count-dropped').length, 1);
+  });
+
+  test('moving an assertion verbatim to another file is not a drop', () => {
+    const line = "    expect(u.age).toEqual(36);\n";
+    const dest = lines(
+      "it('age', () => {",
+      '    expect(u.age).toEqual(36);',
+      '});',
+    );
+    const f = scanChange(
+      { 'src/user.test.ts': T },
+      { 'src/user.test.ts': T.replace(line, ''), 'src/age.test.ts': dest },
+    );
+    assert.deepEqual(only(f, 'assertion-removed'), []);
+    assert.deepEqual(only(f, 'test-count-dropped'), []);
+  });
+
+  test('gutted asserts in a shared test helper are flagged', () => {
+    const before = lines(
+      'export function expectUser(u) {',
+      "  expect(u.name).toBe('Ada');",
+      '  expect(u.age).toEqual(36);',
+      '}',
+    );
+    const f = scanEdit('src/test-helpers.ts', before, before.replace("  expect(u.name).toBe('Ada');\n", ''));
+    const r = only(f, 'assertion-removed');
+    assert.equal(r.length, 1);
+    assert.equal(r[0].file, 'src/test-helpers.ts');
+    assert.equal(r[0].severity, 'medium');
+  });
+
+  test('gutted asserts in conftest.py are flagged', () => {
+    const before = 'def assert_user(u):\n    assert u.name == "Ada"\n    assert u.age == 36\n';
+    const f = scanEdit('conftest.py', before, 'def assert_user(u):\n    assert u.age == 36\n');
+    assert.equal(only(f, 'assertion-removed').length, 1);
+  });
+
+  test('two assertions on one line becoming one is a drop', () => {
+    const before = lines(
+      "it('loads', () => {",
+      "  expect(u.name).toBe('Ada'); expect(u.age).toEqual(36);",
+      '});',
+    );
+    const after = lines(
+      "it('loads', () => {",
+      "  expect(u.name).toBe('Ada');",
+      '});',
+    );
+    const r = only(scanEdit('src/user.test.ts', before, after), 'assertion-removed');
+    assert.equal(r.length, 1);
+    assert.match(r[0].message, /dropped by 1/);
   });
 });
 
